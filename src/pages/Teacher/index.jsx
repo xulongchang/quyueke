@@ -8,6 +8,7 @@ import { message } from 'antd';
 import { useState } from 'react';
 import teacher from './data';
 import classNames from 'classnames';
+import DeleteConfirmModal from './DeleteConfirmModal';
 // import { useLocation, useRouteMatch } from 'umi';
 
 const HomePage = () => {
@@ -29,6 +30,8 @@ const HomePage = () => {
       }
     }
   );//老师类型
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [currentTeacher, setCurrentTeacher] = useState(null);
   
   const columns = [
     {
@@ -210,7 +213,13 @@ const HomePage = () => {
           >
             下移
           </a>
-          <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
+          <a
+            onClick={(e) => {
+              e.preventDefault(); // 阻止默认链接行为
+              handleOpenDeleteModal(record);
+            }}
+            key="delete"
+          >
             删除
           </a>
         </div>
@@ -222,7 +231,27 @@ const HomePage = () => {
     console.log("展示老师详情", rowDate);
   }
 
+    // 打开删除确认弹窗
+  const handleOpenDeleteModal = (teacher) => {
+    setCurrentTeacher(teacher);
+    setDeleteModalVisible(true);
+  };
   
+    // 关闭删除确认弹窗
+  const handleCloseDeleteModal = () => {
+    setDeleteModalVisible(false);
+    setCurrentTeacher(null);
+  };
+
+  // 处理删除成功后的回调
+  const handleDeleteSuccess = () => {
+    // 从数据源中移除已删除的老师
+    const newData = dataSource.filter(item => item.id !== currentTeacher.id);
+    setDataSource(newData);
+    setDeleteModalVisible(false);
+    setCurrentTeacher(null);
+  };
+
 
     const handleDragSortEnd = (
       beforeIndex,
@@ -246,6 +275,12 @@ const HomePage = () => {
         dragSortKey="sort"
         onDragSortEnd={handleDragSortEnd}
         size="small"
+      />
+      <DeleteConfirmModal
+        visible={deleteModalVisible}
+        teacher={currentTeacher}
+        onCancel={handleCloseDeleteModal}
+        onSuccess={handleDeleteSuccess}
       />
     </LayoutContainer>
   );
