@@ -10,21 +10,30 @@ const DeleteConfirmModal = ({ visible, teacher, onCancel, onSuccess }) => {
   });
 
   // 解散班级群
-  const handleDissolve = async () => {
+  // 修改 pages/Teacher/components/DeleteConfirmModal.jsx 中的 handleDissolve 方法
+    const handleDissolve = async () => {
     setLoading(prev => ({ ...prev, dissolve: true }));
     try {
-      // 实际项目中替换为真实接口
-      await service({
-        url: `/api/teacher/${teacher.id}/dissolve-classes`,
-        method: 'POST'
-      });
-      message.success('解散老师ClassIn班级成功');
+        // 按照新要求修改请求地址、方式和参数
+        const response = await service({
+            url: '/store/api/release/teacher/classIn/course',
+            method: 'POST',
+            params: { id: teacher.id } // 请求参数为 {id: 老师id}
+        });
+
+        // 根据新的返回结果格式处理（code=0 为成功）
+        if (response.code === 0) {
+        message.success('解散老师ClassIn班级成功');
+        } else {
+        message.error(response.msg || '解散班级失败，请重试');
+        }
     } catch (error) {
-      message.error('解散班级失败，请重试');
+        // 捕获网络错误或其他异常
+        message.error('网络请求异常，请稍后重试');
     } finally {
-      setLoading(prev => ({ ...prev, dissolve: false }));
+        setLoading(prev => ({ ...prev, dissolve: false }));
     }
-  };
+    };
 
   // 确认删除
   const handleDelete = async () => {
